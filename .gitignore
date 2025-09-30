@@ -1,12 +1,8 @@
 # ==================================
-# Coffre fort 
+# Coffre fort
 # ==================================
 .env         # Votre fichier de secrets
 
-# ==================================
-# Fichiers spécifiques aux Notebooks
-# ==================================
-.ipynb_checkpoints/ # Dossier de sauvegarde automatique de Jupyter
 
 # Fichiers de cache macOS à ignorer
 .DS_Store/
