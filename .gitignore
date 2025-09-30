@@ -1,9 +1,5 @@
 # ==================================
 # Coffre fort
-# ==================================
-.env         # Votre fichier de secrets
 
+.env 
 
-# Fichiers de cache macOS à ignorer
-.DS_Store/
-# ==================================
