@@ -1,5 +1,5 @@
 # ==================================
-# Fichiers de configuration des secrets et de l'environnement
+# Coffre fort 
 # ==================================
 .env         # Votre fichier de secrets
 
@@ -7,10 +7,6 @@
 # Fichiers spécifiques aux Notebooks
 # ==================================
 .ipynb_checkpoints/ # Dossier de sauvegarde automatique de Jupyter
-
-# =TEACHER: C'EST LA CORRECTION QUI MANQUE =
-# 🛑 IGNORER L'ENVIRONNEMENT VIRTUEL CONDA 🛑
-.conda
 
 # Fichiers de cache macOS à ignorer
 .DS_Store/
