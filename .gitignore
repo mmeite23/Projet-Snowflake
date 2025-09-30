@@ -1,0 +1,16 @@
+# ==================================
+# Fichiers de configuration des secrets et de l'environnement
+# ==================================
+.env         # Votre fichier de secrets (DOIT ÊTRE MASQUÉ)
+config.ini   # (Optionnel) Tout autre fichier de configuration local
+
+# ==================================
+# Fichiers spécifiques à Python
+# ==================================
+__pycache__/ # Dossier de cache Python
+*.pyc        # Fichiers bytecode compilés
+
+# ==================================
+# Fichiers spécifiques aux Notebooks
+# ==================================
+.ipynb_checkpoints/ # Dossier de sauvegarde automatique de Jupyter
