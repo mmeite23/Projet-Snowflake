@@ -1,16 +1,17 @@
 # ==================================
 # Fichiers de configuration des secrets et de l'environnement
 # ==================================
-.env         # Votre fichier de secrets (DOIT ÊTRE MASQUÉ)
-config.ini   # (Optionnel) Tout autre fichier de configuration local
-
-# ==================================
-# Fichiers spécifiques à Python
-# ==================================
-__pycache__/ # Dossier de cache Python
-*.pyc        # Fichiers bytecode compilés
+.env         # Votre fichier de secrets
 
 # ==================================
 # Fichiers spécifiques aux Notebooks
 # ==================================
 .ipynb_checkpoints/ # Dossier de sauvegarde automatique de Jupyter
+
+# =TEACHER: C'EST LA CORRECTION QUI MANQUE =
+# 🛑 IGNORER L'ENVIRONNEMENT VIRTUEL CONDA 🛑
+.conda
+
+# Fichiers de cache macOS à ignorer
+.DS_Store/
+# ==================================
