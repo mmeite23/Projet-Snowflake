@@ -414,11 +414,15 @@ This project is open-source and available for educational and commercial use.
 
 ---
 
-## 👤 Author
+## � Authors
 
-**Mory Jr**
-- GitHub: [@mmeite23](https://github.com/mmeite23)
-- Project: [Projet-Snowflake](https://github.com/mmeite23/Projet-Snowflake)
+- **Mory Meite** - [@mmeite23](https://github.com/mmeite23)
+- **Dalanda Diallo**
+- **Roger Daoud**
+- **Mario Daoud**
+- **Maxandre Michel**
+
+Project: [Projet-Snowflake](https://github.com/mmeite23/Projet-Snowflake)
 
 ---
 
