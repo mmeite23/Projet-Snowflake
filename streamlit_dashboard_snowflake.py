@@ -1,22 +1,22 @@
-# 🍷 Les Caves d'Albert - Dashboard BI Streamlit in Snowflake
+# 🍷 Les Caves d'Albert - BI Dashboard Streamlit in Snowflake
 
 import streamlit as st
 import pandas as pd
 from snowflake.snowpark.context import get_active_session
 
-# Configuration de la page
+# Page configuration
 st.set_page_config(
-    page_title="🍷 Les Caves d'Albert - Dashboard BI",
+    page_title="🍷 Les Caves d'Albert - BI Dashboard",
     page_icon="🍷",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Obtenir la session Snowflake active
+# Get active Snowflake session
 session = get_active_session()
 
 # ============================================
-# STYLES CSS PERSONNALISÉS
+# CUSTOM CSS STYLES
 # ============================================
 st.markdown("""
     <style>
@@ -51,28 +51,28 @@ st.markdown('<h1 class="main-header">🍷 Les Caves d\'Albert - Business Intelli
 st.markdown("---")
 
 # ============================================
-# SIDEBAR - FILTRES
+# SIDEBAR - FILTERS
 # ============================================
 with st.sidebar:
     st.image("https://em-content.zobj.net/thumbs/120/apple/354/wine-glass_1f377.png", width=100)
-    st.title("📊 Filtres")
+    st.title("📊 Filters")
     
-    # Période de temps
+    # Time period
     time_range = st.selectbox(
-        "Période d'analyse",
-        ["Dernières 24h", "7 derniers jours", "30 derniers jours", "Tout l'historique"]
+        "Analysis Period",
+        ["Last 24 hours", "Last 7 days", "Last 30 days", "All time"]
     )
     
-    # Mapping des périodes
+    # Period mapping
     time_mapping = {
-        "Dernières 24h": "DATEADD('day', -1, CURRENT_TIMESTAMP())",
-        "7 derniers jours": "DATEADD('day', -7, CURRENT_TIMESTAMP())",
-        "30 derniers jours": "DATEADD('day', -30, CURRENT_TIMESTAMP())",
-        "Tout l'historique": "DATEADD('year', -10, CURRENT_TIMESTAMP())"
+        "Last 24 hours": "DATEADD('day', -1, CURRENT_TIMESTAMP())",
+        "Last 7 days": "DATEADD('day', -7, CURRENT_TIMESTAMP())",
+        "Last 30 days": "DATEADD('day', -30, CURRENT_TIMESTAMP())",
+        "All time": "DATEADD('year', -10, CURRENT_TIMESTAMP())"
     }
     time_filter = time_mapping[time_range]
     
-    # Catégorie de produit
+    # Product category
     categories = session.sql("""
         SELECT DISTINCT PRODUCT_CATEGORY 
         FROM PRODUCTION.ORDERS 
@@ -81,25 +81,25 @@ with st.sidebar:
     """).to_pandas()
     
     selected_categories = st.multiselect(
-        "Catégories de produits",
+        "Product Categories",
         options=categories['PRODUCT_CATEGORY'].tolist(),
         default=categories['PRODUCT_CATEGORY'].tolist()
     )
     
     st.markdown("---")
-    st.markdown("### 🔄 Rafraîchir")
-    if st.button("🔄 Actualiser les données", use_container_width=True):
+    st.markdown("### 🔄 Refresh")
+    if st.button("🔄 Refresh Data", use_container_width=True):
         st.rerun()
 
 # ============================================
-# MÉTRIQUES CLÉS (KPIs)
+# KEY METRICS (KPIs)
 # ============================================
-st.header("📈 Indicateurs Clés de Performance")
+st.header("📈 Key Performance Indicators")
 
-# Construire le filtre de catégories
+# Build category filter
 category_filter = "AND PRODUCT_CATEGORY IN (" + ",".join([f"'{cat}'" for cat in selected_categories]) + ")" if selected_categories else ""
 
-# Requête KPIs
+# KPIs query
 kpi_query = f"""
 SELECT 
     COUNT(DISTINCT ORDER_ID) AS TOTAL_ORDERS,
@@ -118,35 +118,35 @@ col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     st.metric(
-        label="🛒 Commandes",
+        label="🛒 Orders",
         value=f"{int(kpis['TOTAL_ORDERS']):,}",
         delta="Total"
     )
 
 with col2:
     st.metric(
-        label="👥 Clients",
+        label="👥 Customers",
         value=f"{int(kpis['TOTAL_CUSTOMERS']):,}",
-        delta="Uniques"
+        delta="Unique"
     )
 
 with col3:
     st.metric(
-        label="💰 Chiffre d'affaires",
+        label="💰 Revenue",
         value=f"€{kpis['TOTAL_REVENUE']:,.2f}",
         delta=f"Total"
     )
 
 with col4:
     st.metric(
-        label="🧾 Panier moyen",
+        label="🧾 Avg Basket",
         value=f"€{kpis['AVG_ORDER_VALUE']:,.2f}",
-        delta="Par commande"
+        delta="Per order"
     )
 
 with col5:
     st.metric(
-        label="📦 Articles vendus",
+        label="📦 Items Sold",
         value=f"{int(kpis['TOTAL_ITEMS_SOLD']):,}",
         delta="Total"
     )
@@ -154,14 +154,14 @@ with col5:
 st.markdown("---")
 
 # ============================================
-# GRAPHIQUES - LIGNE 1
+# CHARTS - ROW 1
 # ============================================
-st.header("📊 Analyse des Ventes")
+st.header("📊 Sales Analysis")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🍷 Top 10 des Vins les Plus Vendus")
+    st.subheader("🍷 Top 10 Best-Selling Wines")
     top_products = session.sql(f"""
         SELECT 
             PRODUCT_NAME,
@@ -191,10 +191,10 @@ with col1:
             use_container_width=True
         )
     else:
-        st.info("Aucune donnée disponible pour cette période")
+        st.info("No data available for this period")
 
 with col2:
-    st.subheader("📊 Ventes par Catégorie")
+    st.subheader("📊 Sales by Category")
     category_sales = session.sql(f"""
         SELECT 
             PRODUCT_CATEGORY,
@@ -220,19 +220,19 @@ with col2:
             use_container_width=True
         )
     else:
-        st.info("Aucune donnée disponible")
+        st.info("No data available")
 
 st.markdown("---")
 
 # ============================================
-# GRAPHIQUES - LIGNE 2
+# CHARTS - ROW 2
 # ============================================
-st.header("📈 Tendances Temporelles")
+st.header("📈 Time Trends")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📅 Évolution du Chiffre d'Affaires")
+    st.subheader("📅 Revenue Evolution")
     daily_sales = session.sql(f"""
         SELECT 
             ORDER_DATE,
@@ -252,12 +252,12 @@ with col1:
             daily_sales.set_index('ORDER_DATE')['DAILY_REVENUE'],
             use_container_width=True
         )
-        st.caption(f"📊 Tendance sur les {len(daily_sales)} derniers jours")
+        st.caption(f"📊 Trend over the last {len(daily_sales)} days")
     else:
-        st.info("Aucune donnée disponible")
+        st.info("No data available")
 
 with col2:
-    st.subheader("👥 Top 10 Clients (par CA)")
+    st.subheader("👥 Top 10 Customers (by Revenue)")
     top_customers = session.sql(f"""
         SELECT 
             CUSTOMER_ID,
@@ -282,19 +282,19 @@ with col2:
             use_container_width=True
         )
     else:
-        st.info("Aucune donnée disponible")
+        st.info("No data available")
 
 st.markdown("---")
 
 # ============================================
-# INVENTAIRE
+# INVENTORY
 # ============================================
-st.header("📦 Gestion de l'Inventaire")
+st.header("📦 Inventory Management")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("⚠️ Alertes Stock Faible (< 50 unités)")
+    st.subheader("⚠️ Low Stock Alerts (< 50 units)")
     low_stock = session.sql("""
         SELECT 
             PRODUCT_ID,
@@ -310,7 +310,7 @@ with col1:
     """).to_pandas()
     
     if not low_stock.empty:
-        st.warning(f"⚠️ {len(low_stock)} produits avec stock critique !")
+        st.warning(f"⚠️ {len(low_stock)} products with critical stock!")
         st.dataframe(
             low_stock.style.format({
                 'CURRENT_STOCK_LEVEL': '{:,.0f}'
@@ -318,10 +318,10 @@ with col1:
             use_container_width=True
         )
     else:
-        st.success("✅ Tous les stocks sont suffisants")
+        st.success("✅ All stock levels are sufficient")
 
 with col2:
-    st.subheader("📊 Répartition du Stock par Catégorie")
+    st.subheader("📊 Stock Distribution by Category")
     stock_by_category = session.sql("""
         SELECT 
             PRODUCT_CATEGORY,
@@ -347,14 +347,14 @@ with col2:
             use_container_width=True
         )
     else:
-        st.info("Aucune donnée d'inventaire disponible")
+        st.info("No inventory data available")
 
 st.markdown("---")
 
 # ============================================
-# MOUVEMENTS D'INVENTAIRE RÉCENTS
+# RECENT INVENTORY MOVEMENTS
 # ============================================
-st.header("🔄 Mouvements d'Inventaire Récents")
+st.header("🔄 Recent Inventory Movements")
 
 recent_movements = session.sql(f"""
     SELECT 
@@ -379,7 +379,7 @@ if not recent_movements.empty:
         use_container_width=True
     )
 else:
-    st.info("Aucun mouvement récent")
+    st.info("No recent movements")
 
 # ============================================
 # FOOTER
@@ -389,13 +389,13 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     st.caption("🍷 **Les Caves d'Albert**")
-    st.caption("Dashboard BI en temps réel")
+    st.caption("Real-time BI Dashboard")
 
 with col2:
     st.caption("⚡ Powered by **Snowflake + Streamlit**")
-    st.caption("Données mises à jour en temps réel")
+    st.caption("Data updated in real-time")
 
 with col3:
-    st.caption(f"📊 Période analysée: **{time_range}**")
+    st.caption(f"📊 Analysis period: **{time_range}**")
     if selected_categories:
-        st.caption(f"🏷️ Catégories: {len(selected_categories)} sélectionnée(s)")
+        st.caption(f"🏷️ Categories: {len(selected_categories)} selected")
