@@ -1,18 +1,18 @@
-# 🍷 Les Caves d'Albert - Guide d'Automatisation Snowflake
+# 🍷 Les Caves d'Albert - Snowflake Automation Guide
 
-## 📋 Table des Matières
-1. [Vue d'ensemble](#vue-densemble)
-2. [Architecture des Tasks et Streams](#architecture-des-tasks-et-streams)
-3. [Schémas de données](#schémas-de-données)
-4. [Guide d'implémentation](#guide-dimplémentation)
-5. [Monitoring et maintenance](#monitoring-et-maintenance)
-6. [Cas d'usage analytiques](#cas-dusage-analytiques)
+## 📋 Table of Contents
+1. [Overview](#overview)
+2. [Tasks and Streams Architecture](#tasks-and-streams-architecture)
+3. [Data Schemas](#data-schemas)
+4. [Implementation Guide](#implementation-guide)
+5. [Monitoring and Maintenance](#monitoring-and-maintenance)
+6. [Analytical Use Cases](#analytical-use-cases)
 
 ---
 
-## 🎯 Vue d'ensemble
+## 🎯 Overview
 
-### Architecture en 3 couches
+### 3-Layer Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -21,28 +21,28 @@
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │  LAYER 1: RAW (Bronze)                                      │
-│  └── RAW_EVENTS_STREAM (données brutes JSON)                │
+│  └── RAW_EVENTS_STREAM (raw JSON data)                      │
 └─────────────────────────────────────────────────────────────┘
                               ↓ STREAMS + TASKS
 ┌─────────────────────────────────────────────────────────────┐
 │  LAYER 2: STAGING (Silver)                                  │
-│  ├── STG_ORDERS (commandes transformées)                    │
-│  └── STG_INVENTORY_ADJUSTMENTS (ajustements transformés)    │
+│  ├── STG_ORDERS (transformed orders)                        │
+│  └── STG_INVENTORY_ADJUSTMENTS (transformed adjustments)    │
 └─────────────────────────────────────────────────────────────┘
                               ↓ STREAMS + TASKS
 ┌─────────────────────────────────────────────────────────────┐
 │  LAYER 3: PRODUCTION (Gold)                                 │
-│  ├── ORDERS (commandes finales)                             │
-│  ├── INVENTORY_CURRENT (inventaire temps réel)              │
-│  └── INVENTORY_HISTORY (historique complet)                 │
+│  ├── ORDERS (final orders)                                  │
+│  ├── INVENTORY_CURRENT (real-time inventory)                │
+│  └── INVENTORY_HISTORY (complete history)                   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🔄 Architecture des Tasks et Streams
+## 🔄 Tasks and Streams Architecture
 
-### DAG (Directed Acyclic Graph) des Tasks
+### Tasks DAG (Directed Acyclic Graph)
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -102,16 +102,16 @@
 
 ```sql
 RAW_EVENTS_STREAM
-├── EVENT_ID (VARCHAR) - UUID unique
-├── EVENT_TYPE (VARCHAR) - 'ORDER_CREATED' ou 'INVENTORY_ADJUSTED'
-├── EVENT_TIMESTAMP (TIMESTAMP_NTZ) - Timestamp de l'événement
-├── PRODUCT_ID (VARCHAR) - ID produit (ex: PROD-001)
-├── CUSTOMER_ID (VARCHAR) - ID client (ex: CUST-12345)
-├── EVENT_DATA (VARIANT) - JSON contenant toutes les données
-└── INGESTION_TIMESTAMP (TIMESTAMP_NTZ) - Timestamp d'ingestion Kafka
+├── EVENT_ID (VARCHAR) - Unique UUID
+├── EVENT_TYPE (VARCHAR) - 'ORDER_CREATED' or 'INVENTORY_ADJUSTED'
+├── EVENT_TIMESTAMP (TIMESTAMP_NTZ) - Event timestamp
+├── PRODUCT_ID (VARCHAR) - Product ID (e.g. PROD-001)
+├── CUSTOMER_ID (VARCHAR) - Customer ID (e.g. CUST-12345)
+├── EVENT_DATA (VARIANT) - JSON containing all data
+└── INGESTION_TIMESTAMP (TIMESTAMP_NTZ) - Kafka ingestion timestamp
 ```
 
-**Exemple EVENT_DATA pour ORDER_CREATED:**
+**EVENT_DATA example for ORDER_CREATED:**
 ```json
 {
   "order_id": "ORD-20251019-123456",
@@ -126,7 +126,7 @@ RAW_EVENTS_STREAM
 }
 ```
 
-**Exemple EVENT_DATA pour INVENTORY_ADJUSTED:**
+**EVENT_DATA example for INVENTORY_ADJUSTED:**
 ```json
 {
   "adjustment_id": "ADJ-20251019-789012",
@@ -135,74 +135,74 @@ RAW_EVENTS_STREAM
   "adjustment_type": "RESTOCK",
   "quantity_change": 50,
   "new_stock_level": 250,
-  "reason": "Réapprovisionnement hebdomadaire",
-  "warehouse_location": "Entrepôt Paris Nord"
+  "reason": "Weekly restocking",
+  "warehouse_location": "Paris North Warehouse"
 }
 ```
 
 ### STAGING Layer (Silver)
 
-Tables intermédiaires avec données extraites du JSON et nettoyées.
+Intermediate tables with data extracted from JSON and cleaned.
 
-**STG_ORDERS** - Commandes prêtes pour la production
-**STG_INVENTORY_ADJUSTMENTS** - Ajustements d'inventaire prêts pour la production
+**STG_ORDERS** - Orders ready for production
+**STG_INVENTORY_ADJUSTMENTS** - Inventory adjustments ready for production
 
 ### PRODUCTION Layer (Gold)
 
-Tables finales optimisées pour l'analytique.
+Final tables optimized for analytics.
 
-**ORDERS** - Toutes les commandes clients (MERGE avec UPDATE si même ORDER_ID)
-**INVENTORY_CURRENT** - État actuel de l'inventaire par produit (1 ligne par produit)
-**INVENTORY_HISTORY** - Historique complet de tous les ajustements (audit trail)
+**ORDERS** - All customer orders (MERGE with UPDATE if same ORDER_ID)
+**INVENTORY_CURRENT** - Current inventory state by product (1 row per product)
+**INVENTORY_HISTORY** - Complete history of all adjustments (audit trail)
 
 ---
 
-## 🚀 Guide d'implémentation
+## 🚀 Implementation Guide
 
-### Étape 1: Préparer les schémas
+### Step 1: Prepare schemas
 
 ```sql
--- Créer les schémas si nécessaire
+-- Create schemas if needed
 CREATE SCHEMA IF NOT EXISTS STAGING;
 CREATE SCHEMA IF NOT EXISTS PRODUCTION;
 
--- Vérifier
+-- Verify
 SHOW SCHEMAS IN DATABASE CAVES_ALBERT_DB;
 ```
 
-### Étape 2: Exécuter le script principal
+### Step 2: Execute main script
 
 ```sql
--- Exécuter snowflake-tasks-streams.sql dans Snowflake
--- Cela créera :
+-- Execute snowflake-tasks-streams.sql in Snowflake
+-- This will create:
 -- ✅ 5 tables (2 staging + 3 production)
 -- ✅ 4 streams (CDC)
--- ✅ 5 tasks (pipelines automatisés)
+-- ✅ 5 tasks (automated pipelines)
 ```
 
-### Étape 3: Activer les tasks
+### Step 3: Activate tasks
 
 ```sql
--- Les tasks sont activées automatiquement dans le script
--- Vérifier l'état :
+-- Tasks are automatically activated in the script
+-- Check status:
 SHOW TASKS IN SCHEMA RAW_DATA;
 
--- Résultat attendu :
--- STATE = 'started' pour toutes les tasks
+-- Expected result:
+-- STATE = 'started' for all tasks
 ```
 
-### Étape 4: Vérifier le flux de données
+### Step 4: Verify data flow
 
 ```sql
--- 1. Vérifier les streams
+-- 1. Verify les streams
 SELECT 'STREAM_RAW_ORDERS' AS STREAM, 
        SYSTEM$STREAM_HAS_DATA('STREAM_RAW_ORDERS') AS HAS_DATA,
        (SELECT COUNT(*) FROM STREAM_RAW_ORDERS) AS ROW_COUNT;
 
--- 2. Voir les données qui transitent
+-- 2. View data flowing through
 SELECT * FROM STREAM_RAW_ORDERS LIMIT 10;
 
--- 3. Vérifier l'historique des tasks
+-- 3. Check task history
 SELECT
     NAME,
     STATE,
@@ -219,10 +219,10 @@ LIMIT 10;
 
 ## 📈 Monitoring et maintenance
 
-### Dashboard de monitoring
+### Monitoring Dashboard
 
 ```sql
--- Vue d'ensemble du pipeline
+-- Pipeline overview
 CREATE OR REPLACE VIEW MONITORING.PIPELINE_HEALTH AS
 SELECT
     'RAW_EVENTS_STREAM' AS TABLE_NAME,
@@ -261,10 +261,10 @@ SELECT
 FROM PRODUCTION.INVENTORY_HISTORY;
 ```
 
-### Alertes importantes
+### Important Alerts
 
 ```sql
--- 1. Tasks en erreur
+-- 1. Failed tasks
 SELECT
     NAME,
     STATE,
@@ -276,14 +276,14 @@ WHERE STATE = 'FAILED'
     AND SCHEDULED_TIME > DATEADD('hour', -1, CURRENT_TIMESTAMP())
 ORDER BY SCHEDULED_TIME DESC;
 
--- 2. Latence du pipeline (plus de 5 minutes)
+-- 2. Pipeline latency (more than 5 minutes)
 SELECT
     MAX(INGESTION_TIMESTAMP) AS LAST_RAW_INGESTION,
     MAX(UPDATED_AT) AS LAST_PROD_UPDATE,
     DATEDIFF('minute', MAX(UPDATED_AT), CURRENT_TIMESTAMP()) AS LATENCY_MINUTES
 FROM PRODUCTION.ORDERS;
 
--- 3. Produits en rupture de stock
+-- 3. Out of stock products de stock
 SELECT
     PRODUCT_ID,
     PRODUCT_NAME,
@@ -295,21 +295,21 @@ WHERE CURRENT_STOCK_LEVEL <= 0
 ORDER BY LAST_ADJUSTMENT_TIMESTAMP DESC;
 ```
 
-### Maintenance régulière
+### Regular maintenance
 
 ```sql
--- 1. Nettoyer les anciennes données RAW (> 30 jours)
+-- 1. Clean les old data RAW (> 30 jours)
 DELETE FROM RAW_EVENTS_STREAM
 WHERE INGESTION_TIMESTAMP < DATEADD('day', -30, CURRENT_TIMESTAMP());
 
--- 2. Nettoyer les données STAGING (> 7 jours)
+-- 2. Clean les données STAGING (> 7 jours)
 DELETE FROM STAGING.STG_ORDERS
 WHERE INGESTION_TIMESTAMP < DATEADD('day', -7, CURRENT_TIMESTAMP());
 
 DELETE FROM STAGING.STG_INVENTORY_ADJUSTMENTS
 WHERE INGESTION_TIMESTAMP < DATEADD('day', -7, CURRENT_TIMESTAMP());
 
--- 3. Archiver l'historique ancien (> 1 an) dans une table d'archive
+-- 3. Archive l'historique ancien (> 1 an) dans une table d'archive
 CREATE TABLE IF NOT EXISTS PRODUCTION.INVENTORY_HISTORY_ARCHIVE 
     LIKE PRODUCTION.INVENTORY_HISTORY;
 
@@ -450,13 +450,13 @@ ORDER BY ORDER_COUNT DESC;
 
 ### ✅ Scalabilité
 - Architecture modulaire (RAW → STAGING → PROD)
-- Facile d'ajouter de nouveaux types d'événements
+- Facile d'add de nouveaux types d'événements
 - Support de millions d'événements par jour
 
 ### ✅ Maintenabilité
 - SQL pur, pas de code externe
 - Monitoring intégré avec `TASK_HISTORY()`
-- Facile à débugger et à modifier
+- Facile à débugger et à modify
 
 ---
 
@@ -465,24 +465,24 @@ ORDER BY ORDER_COUNT DESC;
 ### Problème : Les tasks ne s'exécutent pas
 
 ```sql
--- 1. Vérifier que les tasks sont bien actives
+-- 1. Verify que les tasks sont bien actives
 SHOW TASKS;
 
--- 2. Activer manuellement si nécessaire
+-- 2. Activate manuellement si nécessaire
 ALTER TASK TASK_RAW_TO_STAGING_ORDERS RESUME;
 
--- 3. Exécuter manuellement pour tester
+-- 3. Execute manuellement pour tester
 EXECUTE TASK TASK_RAW_TO_STAGING_ORDERS;
 ```
 
 ### Problème : Les streams sont vides
 
 ```sql
--- Vérifier que des données arrivent dans RAW
+-- Verify que des données arrivent dans RAW
 SELECT COUNT(*) FROM RAW_EVENTS_STREAM
 WHERE INGESTION_TIMESTAMP > DATEADD('minute', -5, CURRENT_TIMESTAMP());
 
--- Vérifier que le consumer Kafka fonctionne
+-- Verify que le consumer Kafka fonctionne
 -- (voir les logs Docker du container consumer)
 ```
 

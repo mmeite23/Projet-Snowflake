@@ -204,20 +204,20 @@ T+123s : ✅ Donnée disponible pour l'analytique !
 - [ ] Schémas `RAW_DATA`, `STAGING`, `PRODUCTION` créés
 - [ ] Warehouse `COMPUTE_WH` disponible
 - [ ] Consumer Kafka ingère des données dans `RAW_EVENTS_STREAM`
-- [ ] Vérifier que des données sont présentes : `SELECT COUNT(*) FROM RAW_EVENTS_STREAM`
+- [ ] Verify que des données sont présentes : `SELECT COUNT(*) FROM RAW_EVENTS_STREAM`
 
 ### Déploiement
 
-1. [ ] Exécuter `snowflake-tasks-streams.sql` (crée tables + streams + tasks)
-2. [ ] Vérifier que les streams sont créés : `SHOW STREAMS`
-3. [ ] Vérifier que les tasks sont actives : `SHOW TASKS` → `STATE = 'started'`
+1. [ ] Execute `snowflake-tasks-streams.sql` (crée tables + streams + tasks)
+2. [ ] Verify que les streams sont créés : `SHOW STREAMS`
+3. [ ] Verify que les tasks sont actives : `SHOW TASKS` → `STATE = 'started'`
 4. [ ] Attendre 2-3 minutes pour le premier cycle complet
-5. [ ] Vérifier les données en production : `SELECT COUNT(*) FROM PRODUCTION.ORDERS`
+5. [ ] Verify les données en production : `SELECT COUNT(*) FROM PRODUCTION.ORDERS`
 
 ### Post-déploiement
 
 - [ ] Configurer les alertes (tasks en erreur, latence excessive)
-- [ ] Créer un dashboard de monitoring
+- [ ] Create un dashboard de monitoring
 - [ ] Planifier le nettoyage des données anciennes (RAW > 30 jours)
 - [ ] Documenter les SLA pour l'équipe
 

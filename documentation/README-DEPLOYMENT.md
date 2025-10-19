@@ -73,7 +73,7 @@ cd /Users/mory_jr/Projet-Snowflake
 # Démarrer tous les conteneurs Docker
 docker-compose up -d
 
-# Vérifier que tout tourne
+# Verify que tout tourne
 docker ps
 
 # Vous devriez voir :
@@ -82,7 +82,7 @@ docker ps
 # - consumer (insère dans Snowflake)
 ```
 
-**Logs du consumer (pour vérifier)** :
+**Logs du consumer (pour verify)** :
 ```bash
 docker logs consumer --tail 50 --follow
 ```
@@ -95,7 +95,7 @@ Vous devriez voir :
 
 ---
 
-### **2️⃣ Vérifier que RAW_EVENTS_STREAM reçoit des données**
+### **2️⃣ Verify que RAW_EVENTS_STREAM reçoit des données**
 
 Dans Snowflake, exécutez :
 
@@ -142,20 +142,20 @@ snowflake-tasks-streams-CORRECTED.sql
 ```
 
 Ce script va :
-1. ✅ Créer les schémas STAGING et PRODUCTION
-2. ✅ Créer 5 tables (2 staging + 3 production)
-3. ✅ Créer 4 streams CDC
-4. ✅ Créer 4 tasks automatisées
-5. ✅ Activer les tasks
+1. ✅ Create les schémas STAGING et PRODUCTION
+2. ✅ Create 5 tables (2 staging + 3 production)
+3. ✅ Create 4 streams CDC
+4. ✅ Create 4 tasks automatisées
+5. ✅ Activate les tasks
 
 **Temps d'exécution** : ~30 secondes
 
 ---
 
-### **4️⃣ Vérifier que les tasks sont actives**
+### **4️⃣ Verify que les tasks sont actives**
 
 ```sql
--- Vérifier l'état des tasks
+-- Verify l'état des tasks
 SHOW TASKS IN DATABASE CAVES_ALBERT_DB;
 
 -- Vous devriez voir 4 tasks avec state = 'started'
@@ -173,7 +173,7 @@ TASK_STAGING_TO_PROD_INVENTORY_CURRENT | started | (child)
 
 ---
 
-### **5️⃣ Attendre 2-3 minutes et vérifier la propagation des données**
+### **5️⃣ Attendre 2-3 minutes et verify la propagation des données**
 
 ```sql
 -- Vue d'ensemble complète
@@ -206,7 +206,7 @@ PRODUCTION | INVENTORY_CURRENT           | ~500-1000
 
 Si les tables STAGING et PRODUCTION sont encore vides :
 - Attendre 1-2 minutes de plus (les tasks s'exécutent toutes les 1 minute)
-- Ou exécuter manuellement : `EXECUTE TASK TASK_RAW_TO_STAGING_DISTRIBUTOR;`
+- Ou execute manuellement : `EXECUTE TASK TASK_RAW_TO_STAGING_DISTRIBUTOR;`
 
 ---
 
@@ -250,7 +250,7 @@ ORDER BY ORDER_DATE DESC;
 
 ## 🔍 Monitoring et Dépannage
 
-### **Vérifier l'historique des tasks**
+### **Verify l'historique des tasks**
 
 ```sql
 SELECT
@@ -269,7 +269,7 @@ ORDER BY SCHEDULED_TIME DESC
 LIMIT 20;
 ```
 
-### **Vérifier les streams**
+### **Verify les streams**
 
 ```sql
 -- Voir si des données sont en attente dans les streams
@@ -282,7 +282,7 @@ SELECT 'STREAM_STG_ORDERS',
        (SELECT COUNT(*) FROM STREAM_STG_ORDERS);
 ```
 
-### **Vérifier les logs Docker**
+### **Verify les logs Docker**
 
 ```bash
 # Consumer Kafka → Snowflake
@@ -308,13 +308,13 @@ docker logs redpanda --tail 50
 
 **Solution rapide** :
 ```sql
--- Exécuter manuellement les tasks
+-- Execute manuellement les tasks
 EXECUTE TASK TASK_RAW_TO_STAGING_DISTRIBUTOR;
 
 -- Attendre 5 secondes
 SELECT SYSTEM$WAIT(5, 'SECONDS');
 
--- Vérifier STAGING
+-- Verify STAGING
 SELECT COUNT(*) FROM STAGING.STG_ORDERS;
 ```
 
@@ -332,7 +332,7 @@ docker restart consumer
 # Attendre 10 secondes
 sleep 10
 
-# Vérifier les logs
+# Verify les logs
 docker logs consumer --tail 30
 ```
 
@@ -344,10 +344,10 @@ docker logs consumer --tail 30
 
 **Solution** :
 ```sql
--- Activer le warehouse
+-- Activate le warehouse
 ALTER WAREHOUSE COMPUTE_WH RESUME;
 
--- Vérifier qu'il tourne
+-- Verify qu'il tourne
 SHOW WAREHOUSES LIKE 'COMPUTE_WH';
 ```
 
@@ -399,7 +399,7 @@ Projet-Snowflake/
 
 ## 🎯 Prochaines Étapes (Optionnel)
 
-### **A. Créer un Dashboard Snowflake**
+### **A. Create un Dashboard Snowflake**
 
 Créez des vues matérialisées pour des requêtes plus rapides :
 
@@ -414,7 +414,7 @@ FROM PRODUCTION.ORDERS
 GROUP BY ORDER_DATE;
 ```
 
-### **B. Ajouter des alertes**
+### **B. Add des alertes**
 
 ```sql
 -- Alerte : Stock critique (< 10 unités)
@@ -442,7 +442,7 @@ Connectez Tableau Desktop à Snowflake :
 Si vous rencontrez des problèmes :
 1. Vérifiez les logs : `docker logs consumer --tail 100`
 2. Vérifiez l'historique des tasks : `SELECT * FROM TABLE(INFORMATION_SCHEMA.TASK_HISTORY(...))`
-3. Consultez `SNOWFLAKE_AUTOMATION_GUIDE.md` pour plus de détails
+3. Consultez `SNOWFLAKE_AUTOMATION_GUIDE.md` pour more than détails
 
 ---
 

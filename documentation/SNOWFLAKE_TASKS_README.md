@@ -18,7 +18,7 @@ Kafka Producer → RedPanda → Consumer → Snowflake RAW → STAGING → PRODU
 
 | Fichier | Description | Usage |
 |---------|-------------|-------|
-| **`snowflake-tasks-streams.sql`** | Script principal de déploiement | Créer toutes les tables, streams et tasks |
+| **`snowflake-tasks-streams.sql`** | Script principal de déploiement | Create toutes les tables, streams et tasks |
 | **`SNOWFLAKE_AUTOMATION_GUIDE.md`** | Guide complet d'implémentation | Documentation technique détaillée |
 | **`ARCHITECTURE_DIAGRAM.md`** | Diagrammes et flux de données | Comprendre l'architecture visuelle |
 | **`analytical-queries.sql`** | 50+ requêtes prêtes à l'emploi | Analyses business et dashboards |
@@ -27,7 +27,7 @@ Kafka Producer → RedPanda → Consumer → Snowflake RAW → STAGING → PRODU
 
 ## 🚀 Quick Start (5 minutes)
 
-### Prérequis
+### Prerequisites
 
 - ✅ Base de données `CAVES_ALBERT_DB` créée dans Snowflake
 - ✅ Schémas `RAW_DATA`, `STAGING`, `PRODUCTION` créés
@@ -36,7 +36,7 @@ Kafka Producer → RedPanda → Consumer → Snowflake RAW → STAGING → PRODU
 
 ### Installation en 3 étapes
 
-#### 1️⃣ Vérifier que des données arrivent
+#### 1️⃣ Verify que des données arrivent
 
 ```sql
 USE DATABASE CAVES_ALBERT_DB;
@@ -46,21 +46,21 @@ SELECT COUNT(*) FROM RAW_EVENTS_STREAM;
 -- Résultat attendu : > 0 événements
 ```
 
-#### 2️⃣ Exécuter le script de déploiement
+#### 2️⃣ Execute le script de déploiement
 
 ```sql
 -- Copier/coller le contenu de snowflake-tasks-streams.sql
--- dans Snowflake et exécuter tout le script
+-- dans Snowflake et execute tout le script
 ```
 
-#### 3️⃣ Vérifier l'activation
+#### 3️⃣ Verify l'activation
 
 ```sql
--- Vérifier que les tasks sont actives
+-- Verify que les tasks sont actives
 SHOW TASKS IN SCHEMA RAW_DATA;
 -- Résultat : STATE = 'started' pour toutes les tasks
 
--- Attendre 2-3 minutes et vérifier les données
+-- Attendre 2-3 minutes et verify les données
 SELECT COUNT(*) FROM PRODUCTION.ORDERS;
 SELECT COUNT(*) FROM PRODUCTION.INVENTORY_CURRENT;
 ```
@@ -203,7 +203,7 @@ HAVING LIFETIME_VALUE > 1000
 ORDER BY LIFETIME_VALUE DESC;
 ```
 
-### Exemple 3 : Produits en rupture de stock
+### Exemple 3 : Out of stock products de stock
 
 ```sql
 SELECT
@@ -220,7 +220,7 @@ ORDER BY PRODUCT_CATEGORY;
 
 ## 📊 Monitoring en temps réel
 
-### Vérifier l'état du pipeline
+### Verify l'état du pipeline
 
 ```sql
 -- 1. État des tasks
@@ -238,14 +238,14 @@ WHERE NAME LIKE 'TASK_%'
 ORDER BY SCHEDULED_TIME DESC
 LIMIT 10;
 
--- 3. Vérifier les streams (données en attente)
+-- 3. Verify les streams (données en attente)
 SELECT 'STREAM_RAW_ORDERS' AS STREAM_NAME, 
        SYSTEM$STREAM_HAS_DATA('STREAM_RAW_ORDERS') AS HAS_DATA
 UNION ALL
 SELECT 'STREAM_RAW_INVENTORY', 
        SYSTEM$STREAM_HAS_DATA('STREAM_RAW_INVENTORY');
 
--- 4. Latence du pipeline
+-- 4. Pipeline latency
 SELECT
     MAX(INGESTION_TIMESTAMP) AS LAST_RAW_INGESTION,
     MAX(UPDATED_AT) AS LAST_PROD_UPDATE,
@@ -285,10 +285,10 @@ ALTER TASK TASK_RAW_TO_STAGING_INVENTORY SUSPEND;
 ALTER TASK TASK_RAW_TO_STAGING_ORDERS SUSPEND;
 ```
 
-### Réactiver les tasks
+### Réactivate les tasks
 
 ```sql
--- Activer dans l'ordre normal (parents d'abord)
+-- Activate dans l'ordre normal (parents d'abord)
 ALTER TASK TASK_RAW_TO_STAGING_ORDERS RESUME;
 ALTER TASK TASK_RAW_TO_STAGING_INVENTORY RESUME;
 ALTER TASK TASK_STAGING_TO_PROD_ORDERS RESUME;
@@ -296,20 +296,20 @@ ALTER TASK TASK_STAGING_TO_PROD_INVENTORY_HISTORY RESUME;
 ALTER TASK TASK_STAGING_TO_PROD_INVENTORY_CURRENT RESUME;
 ```
 
-### Exécuter manuellement une task (test)
+### Execute manuellement une task (test)
 
 ```sql
 EXECUTE TASK TASK_RAW_TO_STAGING_ORDERS;
 ```
 
-### Nettoyer les anciennes données
+### Clean les old data
 
 ```sql
--- Supprimer les données RAW de plus de 30 jours
+-- Delete les données RAW de more than 30 jours
 DELETE FROM RAW_DATA.RAW_EVENTS_STREAM
 WHERE INGESTION_TIMESTAMP < DATEADD('day', -30, CURRENT_TIMESTAMP());
 
--- Supprimer les données STAGING de plus de 7 jours
+-- Delete les données STAGING de more than 7 jours
 DELETE FROM STAGING.STG_ORDERS
 WHERE INGESTION_TIMESTAMP < DATEADD('day', -7, CURRENT_TIMESTAMP());
 ```
@@ -321,7 +321,7 @@ WHERE INGESTION_TIMESTAMP < DATEADD('day', -7, CURRENT_TIMESTAMP());
 ### Problème : Les tasks ne s'exécutent pas
 
 ```sql
--- 1. Vérifier l'état des tasks
+-- 1. Verify l'état des tasks
 SHOW TASKS;
 
 -- 2. Voir les erreurs
@@ -331,25 +331,25 @@ WHERE STATE = 'FAILED'
 ORDER BY SCHEDULED_TIME DESC
 LIMIT 5;
 
--- 3. Réactiver si nécessaire
+-- 3. Réactivate si nécessaire
 ALTER TASK TASK_RAW_TO_STAGING_ORDERS RESUME;
 ```
 
 ### Problème : Les streams sont vides
 
 ```sql
--- Vérifier que des données arrivent dans RAW
+-- Verify que des données arrivent dans RAW
 SELECT COUNT(*) FROM RAW_DATA.RAW_EVENTS_STREAM
 WHERE INGESTION_TIMESTAMP > DATEADD('minute', -5, CURRENT_TIMESTAMP());
 
--- Si 0 : Vérifier que le consumer Kafka fonctionne
+-- Si 0 : Verify que le consumer Kafka fonctionne
 -- docker logs consumer-caves-albert
 ```
 
 ### Problème : Latence excessive (> 5 min)
 
 ```sql
--- Vérifier la durée d'exécution des tasks
+-- Verify la durée d'exécution des tasks
 SELECT
     NAME,
     DATEDIFF('second', SCHEDULED_TIME, COMPLETED_TIME) AS DURATION_SEC
@@ -370,8 +370,8 @@ ORDER BY DURATION_SEC DESC;
 
 1. **Tasks conditionnelles** : Les tasks ne s'exécutent que si `SYSTEM$STREAM_HAS_DATA() = TRUE`
 2. **Auto-suspend warehouse** : Le warehouse se suspend automatiquement entre les exécutions
-3. **Nettoyage régulier** : Supprimer les anciennes données RAW et STAGING
-4. **Clustering keys** : Ajouter des clés de clustering sur les grandes tables
+3. **Nettoyage régulier** : Delete les old data RAW et STAGING
+4. **Clustering keys** : Add des clés de clustering sur les grandes tables
 
 ### Exemple de clustering
 
@@ -393,7 +393,7 @@ CLUSTER BY (PRODUCT_CATEGORY, PRODUCT_ID);
 - **`ARCHITECTURE_DIAGRAM.md`** : Diagrammes visuels du flux de données
 - **`analytical-queries.sql`** : Toutes les requêtes prêtes à l'emploi
 
-### Ressources externes
+### Resources externes
 
 - [Snowflake Streams Documentation](https://docs.snowflake.com/en/user-guide/streams-intro)
 - [Snowflake Tasks Documentation](https://docs.snowflake.com/en/user-guide/tasks-intro)
@@ -415,13 +415,13 @@ CLUSTER BY (PRODUCT_CATEGORY, PRODUCT_ID);
 
 ### ✅ Scalabilité
 - Architecture modulaire (RAW → STAGING → PROD)
-- Facile d'ajouter de nouveaux types d'événements
+- Facile d'add de nouveaux types d'événements
 - Support de la croissance du volume de données
 
 ### ✅ Maintenabilité
 - SQL pur, pas de code externe
 - Monitoring intégré
-- Facile à débugger et à modifier
+- Facile à débugger et à modify
 
 ### ✅ Coût optimisé
 - Tasks conditionnelles (uniquement si données présentes)
@@ -436,7 +436,7 @@ CLUSTER BY (PRODUCT_CATEGORY, PRODUCT_ID);
 
 1. **Alerting** : Configurer des alertes Snowflake pour les anomalies
 2. **DBT** : Intégrer DBT pour la gestion des transformations
-3. **Great Expectations** : Ajouter des tests de qualité de données
+3. **Great Expectations** : Add des tests de qualité de données
 4. **Tableau/Power BI** : Connecter un outil BI pour des dashboards visuels
 5. **Machine Learning** : Prévisions de demande avec Snowflake ML
 

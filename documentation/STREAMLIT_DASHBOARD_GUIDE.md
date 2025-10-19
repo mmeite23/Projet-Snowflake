@@ -1,105 +1,105 @@
-# 🍷 Guide de Déploiement - Dashboard Streamlit in Snowflake
+# 🍷 Deployment Guide - Streamlit Dashboard in Snowflake
 
-## 📋 Vue d'ensemble
+## 📋 Overview
 
-Ce dashboard Streamlit s'exécute **directement dans Snowflake** (Streamlit in Snowflake) pour analyser les données en temps réel de "Les Caves d'Albert".
+This Streamlit dashboard runs **directly in Snowflake** (Streamlit in Snowflake) to analyze real-time data from "Les Caves d'Albert".
 
-### ✨ Fonctionnalités
+### ✨ Features
 
-- 📊 **5 KPIs principaux** : Commandes, Clients, CA, Panier moyen, Articles vendus
-- 🍷 **Top 10 des vins** les plus vendus
-- 📈 **Analyse par catégorie** (Rouge, Blanc, Effervescent, Spiritueux)
-- 📅 **Évolution temporelle** du chiffre d'affaires
-- 👥 **Top clients** par montant dépensé
-- ⚠️ **Alertes stock** (produits < 50 unités)
-- 🔄 **Mouvements d'inventaire** récents
-- 🎛️ **Filtres interactifs** : période, catégories
-
----
-
-## 🚀 Déploiement dans Snowflake
-
-### **Prérequis**
-
-✅ Compte Snowflake avec **Streamlit in Snowflake** activé  
-✅ Base de données `CAVES_ALBERT_DB` avec données PRODUCTION  
-✅ Rôle avec accès à PRODUCTION.ORDERS et PRODUCTION.INVENTORY_*
+- 📊 **5 Main KPIs**: Orders, Customers, Revenue, Avg Basket, Items Sold
+- 🍷 **Top 10 Best-Selling Wines**
+- 📈 **Analysis by Category** (Red, White, Sparkling, Spirits)
+- 📅 **Revenue Time Evolution**
+- 👥 **Top Customers** by amount spent
+- ⚠️ **Stock Alerts** (products < 50 units)
+- 🔄 **Recent Inventory Movements**
+- 🎛️ **Interactive Filters**: period, categories
 
 ---
 
-### **Étape 1 : Créer le Streamlit App dans Snowflake**
+## 🚀 Deployment in Snowflake
 
-1. **Connectez-vous à Snowflake**
-2. Dans le menu de gauche, cliquez sur **Streamlit**
-3. Cliquez sur **+ Streamlit App**
-4. Configurez :
-   - **App name** : `Les_Caves_Albert_Dashboard`
-   - **Warehouse** : `COMPUTE_WH`
-   - **App location** :
-     - Database : `CAVES_ALBERT_DB`
-     - Schema : `PUBLIC` ou créez `DASHBOARDS`
+### **Prerequisites**
+
+✅ Snowflake account with **Streamlit in Snowflake** enabled  
+✅ `CAVES_ALBERT_DB` database with PRODUCTION data  
+✅ Role with access to PRODUCTION.ORDERS and PRODUCTION.INVENTORY_*
 
 ---
 
-### **Étape 2 : Copier le code**
+### **Step 1: Create Streamlit App in Snowflake**
 
-1. Ouvrez le fichier `streamlit_dashboard_snowflake.py`
-2. **Copiez TOUT le contenu**
-3. **Collez** dans l'éditeur Streamlit de Snowflake
-4. Cliquez sur **Run** (coin supérieur droit)
-
----
-
-### **Étape 3 : Vérification**
-
-Le dashboard devrait afficher :
-
-✅ 5 métriques KPI en haut  
-✅ Graphique des top 10 vins  
-✅ Graphique des ventes par catégorie  
-✅ Évolution du CA dans le temps  
-✅ Alertes stock faible  
+1. **Log in to Snowflake**
+2. In the left menu, click on **Streamlit**
+3. Click on **+ Streamlit App**
+4. Configure:
+   - **App name**: `Les_Caves_Albert_Dashboard`
+   - **Warehouse**: `COMPUTE_WH`
+   - **App location**:
+     - Database: `CAVES_ALBERT_DB`
+     - Schema: `PUBLIC` or create `DASHBOARDS`
 
 ---
 
-## 🎨 Personnalisation
+### **Step 2: Copy the code**
 
-### **Modifier les filtres de période**
+1. Open the file `streamlit_dashboard_snowflake.py`
+2. **Copy ALL content**
+3. **Paste** into Snowflake's Streamlit editor
+4. Click **Run** (upper right corner)
 
-Dans la sidebar, section "Période d'analyse" :
+---
+
+### **Step 3: Verification**
+
+The dashboard should display:
+
+✅ 5 KPI metrics at the top  
+✅ Top 10 wines chart  
+✅ Sales by category chart  
+✅ Revenue evolution over time  
+✅ Low stock alerts  
+
+---
+
+## 🎨 Customization
+
+### **Modify Period Filters**
+
+In the sidebar, "Analysis Period" section:
 
 ```python
 time_mapping = {
-    "Dernières 24h": "DATEADD('day', -1, CURRENT_TIMESTAMP())",
-    "7 derniers jours": "DATEADD('day', -7, CURRENT_TIMESTAMP())",
-    "30 derniers jours": "DATEADD('day', -30, CURRENT_TIMESTAMP())",
-    "Tout l'historique": "DATEADD('year', -10, CURRENT_TIMESTAMP())"
+    "Last 24 hours": "DATEADD('day', -1, CURRENT_TIMESTAMP())",
+    "Last 7 days": "DATEADD('day', -7, CURRENT_TIMESTAMP())",
+    "Last 30 days": "DATEADD('day', -30, CURRENT_TIMESTAMP())",
+    "All time": "DATEADD('year', -10, CURRENT_TIMESTAMP())"
 }
 ```
 
-Ajoutez vos propres périodes !
+Add your own custom periods!
 
 ---
 
-### **Modifier les seuils d'alerte stock**
+### **Modify Stock Alert Thresholds**
 
-Ligne ~290, changez la valeur de 50 :
+Line ~290, change the value of 50:
 
 ```python
-WHERE CURRENT_STOCK_LEVEL < 50  # ← Changez cette valeur
+WHERE CURRENT_STOCK_LEVEL < 50  # ← Change this value
 ```
 
 ---
 
-### **Ajouter un nouveau graphique**
+### **Add a New Chart**
 
-Exemple : Ajouter un graphique "Ventes par canal" (E-com, Boutique, etc.)
+Example: Add a "Sales by Channel" chart (E-commerce, Store, etc.)
 
 ```python
-st.subheader("📊 Ventes par Canal")
+st.subheader("📊 Sales by Channel")
 channel_sales = session.sql(f"""
     SELECT 
-        PAYMENT_METHOD AS CANAL,
+        PAYMENT_METHOD AS CHANNEL,
         COUNT(*) AS ORDERS,
         ROUND(SUM(TOTAL_AMOUNT), 2) AS REVENUE
     FROM PRODUCTION.ORDERS
@@ -108,33 +108,33 @@ channel_sales = session.sql(f"""
     ORDER BY REVENUE DESC
 """).to_pandas()
 
-st.bar_chart(channel_sales.set_index('CANAL')['REVENUE'])
+st.bar_chart(channel_sales.set_index('CHANNEL')['REVENUE'])
 ```
 
 ---
 
-## 📊 Utilisation
+## 📊 Usage
 
-### **Filtres disponibles**
+### **Available Filters**
 
-1. **Période** : Dernières 24h / 7j / 30j / Tout l'historique
-2. **Catégories** : Rouge, Blanc, Effervescent, Spiritueux (multi-sélection)
+1. **Period**: Last 24h / 7d / 30d / All time
+2. **Categories**: Red, White, Sparkling, Spirits (multi-select)
 
-### **Rafraîchir les données**
+### **Refresh Data**
 
-Cliquez sur le bouton **🔄 Actualiser les données** dans la sidebar.
+Click the **🔄 Refresh Data** button in the sidebar.
 
 ---
 
-## 🔧 Dépannage
+## 🔧 Troubleshooting
 
-### **Erreur : "Table does not exist"**
+### **Error: "Table does not exist"**
 
-**Cause** : Les tables PRODUCTION n'existent pas ou ne sont pas accessibles
+**Cause**: PRODUCTION tables don't exist or are not accessible
 
-**Solution** :
+**Solution**:
 ```sql
--- Vérifier que les tables existent
+-- Verify tables exist
 USE DATABASE CAVES_ALBERT_DB;
 SELECT COUNT(*) FROM PRODUCTION.ORDERS;
 SELECT COUNT(*) FROM PRODUCTION.INVENTORY_CURRENT;
@@ -143,50 +143,50 @@ SELECT COUNT(*) FROM PRODUCTION.INVENTORY_HISTORY;
 
 ---
 
-### **Erreur : "Cannot get active session"**
+### **Error: "Cannot get active session"**
 
-**Cause** : Le code n'est pas exécuté dans Streamlit in Snowflake
+**Cause**: Code is not running in Streamlit in Snowflake
 
-**Solution** : Assurez-vous d'utiliser **Streamlit in Snowflake** (pas un Streamlit local)
-
----
-
-### **Graphiques vides**
-
-**Cause** : Aucune donnée pour la période sélectionnée
-
-**Solution** :
-1. Sélectionnez "Tout l'historique"
-2. Vérifiez que les tasks Snowflake ont bien propagé les données
-3. Exécutez : `SELECT COUNT(*) FROM PRODUCTION.ORDERS;`
+**Solution**: Make sure to use **Streamlit in Snowflake** (not local Streamlit)
 
 ---
 
-## 🎯 Prochaines Améliorations
+### **Empty Charts**
 
-### **Version 2 : Fonctionnalités avancées**
+**Cause**: No data for the selected period
 
-- [ ] 📧 Alertes email pour stock critique
-- [ ] 🔮 Prédictions de ventes (ML)
-- [ ] 📍 Carte géographique des entrepôts
-- [ ] 💰 Analyse de marge par produit
-- [ ] 📊 Exports PDF des rapports
-- [ ] 🔔 Notifications en temps réel
+**Solution**:
+1. Select "All time"
+2. Verify Snowflake tasks have properly propagated the data
+3. Execute: `SELECT COUNT(*) FROM PRODUCTION.ORDERS;`
 
-### **Exemples de widgets à ajouter**
+---
+
+## 🎯 Future Improvements
+
+### **Version 2: Advanced Features**
+
+- [ ] 📧 Email alerts for critical stock
+- [ ] 🔮 Sales predictions (ML)
+- [ ] 📍 Geographic map of warehouses
+- [ ] 💰 Margin analysis by product
+- [ ] 📊 PDF report exports
+- [ ] 🔔 Real-time notifications
+
+### **Widget Examples to Add**
 
 ```python
-# Widget : Sélecteur de date personnalisé
+# Widget: Custom date selector
 date_range = st.date_input(
-    "Sélectionner une plage de dates",
+    "Select date range",
     value=(datetime.now() - timedelta(days=30), datetime.now())
 )
 
-# Widget : Recherche de produit
-search_product = st.text_input("🔍 Rechercher un produit")
+# Widget: Product search
+search_product = st.text_input("🔍 Search for a product")
 
-# Widget : Export CSV
-if st.button("📥 Télécharger les données"):
+# Widget: CSV Export
+if st.button("📥 Download data"):
     csv = top_products.to_csv(index=False)
     st.download_button(
         label="💾 Download CSV",
@@ -198,21 +198,21 @@ if st.button("📥 Télécharger les données"):
 
 ---
 
-## 📱 Partage du Dashboard
+## 📱 Dashboard Sharing
 
-### **Option 1 : Partage interne Snowflake**
+### **Option 1: Internal Snowflake Sharing**
 
-1. Dans Streamlit in Snowflake, cliquez sur **Share**
-2. Sélectionnez les rôles/utilisateurs autorisés
-3. Ils accéderont via leur compte Snowflake
+1. In Streamlit in Snowflake, click **Share**
+2. Select authorized roles/users
+3. They will access via their Snowflake account
 
-### **Option 2 : URL publique (si disponible)**
+### **Option 2: Public URL (if available)**
 
-Certains comptes Snowflake permettent de générer une URL publique.
+Some Snowflake accounts allow generating a public URL.
 
 ---
 
-## 🔗 Ressources
+## 🔗 Resources
 
 - [Streamlit in Snowflake Documentation](https://docs.snowflake.com/en/developer-guide/streamlit/about-streamlit)
 - [Snowpark Python API](https://docs.snowflake.com/en/developer-guide/snowpark/python/index)
@@ -220,18 +220,18 @@ Certains comptes Snowflake permettent de générer une URL publique.
 
 ---
 
-## ✅ Checklist de Déploiement
+## ✅ Deployment Checklist
 
-- [ ] Base de données CAVES_ALBERT_DB créée
-- [ ] Tables PRODUCTION.ORDERS, INVENTORY_CURRENT, INVENTORY_HISTORY remplies
-- [ ] Streamlit in Snowflake activé sur le compte
-- [ ] Warehouse COMPUTE_WH disponible
-- [ ] Code copié dans l'éditeur Streamlit
-- [ ] Dashboard s'affiche correctement
-- [ ] Filtres fonctionnent
-- [ ] Graphiques affichent des données
-- [ ] Dashboard partagé avec l'équipe
+- [ ] CAVES_ALBERT_DB database created
+- [ ] PRODUCTION.ORDERS, INVENTORY_CURRENT, INVENTORY_HISTORY tables populated
+- [ ] Streamlit in Snowflake enabled on account
+- [ ] COMPUTE_WH warehouse available
+- [ ] Code copied to Streamlit editor
+- [ ] Dashboard displays correctly
+- [ ] Filters work
+- [ ] Charts display data
+- [ ] Dashboard shared with team
 
 ---
 
-**🍷 Profitez de votre dashboard BI en temps réel ! 🍷**
+**🍷 Enjoy your real-time BI dashboard! 🍷**

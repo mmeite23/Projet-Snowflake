@@ -2,7 +2,7 @@
 
 ## 📋 Installation
 
-### Prérequis
+### Prerequisites
 ```bash
 pip install streamlit snowflake-connector-python pandas plotly
 ```
