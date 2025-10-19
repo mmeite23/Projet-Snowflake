@@ -1,0 +1,23 @@
+# Kafka Consumer Requirements - Les Caves d'Albert
+
+# Kafka client
+kafka-python==2.0.2
+
+# Database
+sqlalchemy==1.4.46
+snowflake-sqlalchemy==1.4.7
+snowflake-connector-python==3.0.4
+
+# Data processing
+pandas==2.0.3
+numpy==1.24.3
+
+# Monitoring
+prometheus-client==0.17.1
+
+# Configuration
+python-dotenv==1.0.0
+
+# Optional: Development tools
+# ipython==8.14.0
+# jupyter==1.0.0

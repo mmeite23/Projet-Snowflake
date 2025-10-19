@@ -1,5 +1,53 @@
 # ==================================
-# Coffre fort
-
+# Coffre fort (Credentials)
 .env 
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Data files (generated/temporary)
+csv/
+test_data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Old files
+old/
+
+# Logs
+*.log
+logs/
+
+# Monitoring data (Prometheus/Grafana volumes)
+prometheus_data/
+grafana_data/
+
+# Internal documentation (local use only)
+GITHUB_PUSH_AUDIT.md
+REORGANIZATION_SUMMARY.md
+TODO_BEFORE_PUSH.md
 

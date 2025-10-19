@@ -10,7 +10,7 @@ services:
       KAFKA_TOPIC_NAME: ${KAFKA_TOPIC_NAME}
     command: ["python", "-u", "kafka_producer.py"]
     volumes:
-      - ./kafka_producer.py:/app/kafka_producer.py
+      - ./streaming/kafka_producer.py:/app/kafka_producer.py
     depends_on:
       - redpanda
     networks:
@@ -30,12 +30,15 @@ services:
       SNOWFLAKE_DATABASE: ${SNOWFLAKE_DATABASE}
       SNOWFLAKE_SCHEMA: ${SNOWFLAKE_SCHEMA}
     command: ["python", "-u", "kafka_consumer_snowflake.py"]
+    ports:
+      - "8000:8000"  # Expose Prometheus metrics endpoint
     volumes:
-      - ./kafka_consumer_snowflake.py:/app/kafka_consumer_snowflake.py
+      - ./streaming/kafka_consumer_snowflake.py:/app/kafka_consumer_snowflake.py
     depends_on:
       - redpanda
     networks:
       - app-net
+      - caves-albert-monitoring  # Connect to monitoring network
 
   redpanda:
     image: docker.redpanda.com/redpandadata/redpanda:latest
@@ -65,3 +68,5 @@ services:
 networks:
   app-net:
     driver: bridge
+  caves-albert-monitoring:
+    external: true  # Use external monitoring network

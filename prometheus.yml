@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'les-caves-albert-monitor'
+
+scrape_configs:
+  # Kafka Consumer Metrics
+  - job_name: 'kafka-consumer-snowflake'
+    static_configs:
+      - targets: ['consumer:8000']  # Consumer container name
+        labels:
+          service: 'kafka-consumer'
+          app: 'les-caves-albert'
+          
+  # Add more scrape configs as needed
+  # - job_name: 'kafka-producer'
+  #   static_configs:
+  #     - targets: ['host.docker.internal:8001']
